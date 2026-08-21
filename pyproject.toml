@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "high-dim-neural-spectral"
+version = "0.1.0"
+description = "High-Dimensional Spectral Analysis for Neural Network Complexity Reduction & Synthetic Data Generation (GPT-2)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Research Team"}
+]
+keywords = [
+    "deep-learning",
+    "random-matrix-theory",
+    "spectral-analysis",
+    "gpt2",
+    "model-compression",
+    "layer-pruning",
+    "marchenko-pastur",
+    "synthetic-data"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "datasets>=2.14.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "scikit-learn>=1.2.0",
+    "tqdm>=4.65.0",
+    "powerlaw>=1.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.3.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0"
+]
