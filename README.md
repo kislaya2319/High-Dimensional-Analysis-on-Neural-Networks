@@ -16,33 +16,39 @@ This repository provides an end-to-end mathematical framework, diagnostic toolki
 1. **Model Complexity Reduction (Layer Pruning & Spectral Truncation)**: Analyzing the eigenvalue spectra of empirical correlation matrices $C = \frac{1}{N} W W^\top$ across GPT-2 layers, distinguishing between information-bearing signal eigenvalues and Marchenko-Pastur bulk noise, and identifying redundant layers for structured pruning.
 2. **Spectral Noise Filtering for Synthetic Dataset Generation**: Projecting hidden representations across transformer layers onto denoised signal subspaces to purge intra-layer noise, using the conditioned neural manifold output to generate high-fidelity, distributionally robust synthetic data.
 
-```
-                  ┌────────────────────────────────────────────────────────┐
-                  │                 Pretrained GPT-2 Model                 │
-                  └───────────────────────────┬────────────────────────────┘
-                                              │
-                    ┌─────────────────────────┴─────────────────────────┐
-                    ▼                                                   ▼
-     [Layer Weights Analysis]                             [Hidden Activations Analysis]
-    $W \in \mathbb{R}^{M \times N}$                      $H_l \in \mathbb{R}^{B \times T \times d}$
-                    │                                                   │
-                    ▼                                                   ▼
-     Correlation: $C = \frac{1}{N} W W^\top$              Activation Covariance $\Sigma_l$
-                    │                                                   │
-                    ▼                                                   ▼
-     Eigendecomposition: $C v_i = \lambda_i v_i$          Noise Filtering: $\lambda_i \le \lambda_+$
-                    │                                                   │
-        ┌───────────┴───────────┐                                       ▼
-        ▼                       ▼                         Denoised Layer Manifold $\tilde{H}_l$
- [Marchenko-Pastur Fit]   [Spectral Metrics]                            │
- Bulk Edge $\lambda_+$     Stable Rank, Entropy                         ▼
-        │                       │                         ═════════════════════════════════
-        └───────────┬───────────┘                          EXTENDED GOAL: High-Fidelity
-                    ▼                                       Synthetic Dataset Generation
-  ═════════════════════════════════════════               ═════════════════════════════════
-    PRIMARY GOAL: Layer Pruning & SVD
-      Truncation (Complexity Reduction)
-  ═════════════════════════════════════════
+```mermaid
+flowchart TD
+    M["<b>Pretrained GPT-2 Model</b><br/>12 Transformer Blocks"]
+    
+    subgraph Primary["PRIMARY GOAL: Model Complexity Reduction"]
+        W["<b>Layer Weights Extraction</b><br/>W ∈ ℝ<sup>M × N</sup>"]
+        C["<b>Empirical Correlation Matrix</b><br/>C = <sup>1</sup>/<sub>N</sub> W W<sup>T</sup>"]
+        EIG["<b>Eigendecomposition & ESD</b><br/>C v<sub>i</sub> = λ<sub>i</sub> v<sub>i</sub>"]
+        MP["<b>Marchenko-Pastur Fit</b><br/>Noise Bulk Edge λ<sub>+</sub>"]
+        MET["<b>Spectral Metrics</b><br/>Stable Rank & Entropy"]
+        PRUNE["<b>Layer Pruning & SVD Truncation</b><br/>Structured Layer Removal"]
+    end
+
+    subgraph Extended["EXTENDED GOAL: Synthetic Dataset Generation"]
+        ACT["<b>Hidden Activation Extraction</b><br/>H<sub>l</sub> ∈ ℝ<sup>B × T × d</sup>"]
+        COV["<b>Activation Covariance</b><br/>Σ<sub>l</sub> = <sup>1</sup>/<sub>T</sub> H<sub>l</sub><sup>T</sup> H<sub>l</sub>"]
+        FILTER["<b>RMT Noise Subspace Filtering</b><br/>Purge Bulk Noise (λ ≤ λ<sub>+</sub>)"]
+        CLEAN["<b>Denoised Manifold Propagation</b><br/>H̃<sub>l</sub> = H<sub>l</sub> P<sub>signal</sub>"]
+        GEN["<b>High-Fidelity Synthetic Tokens</b><br/>Clean Autoregressive Output"]
+    end
+
+    M --> W
+    M --> ACT
+    
+    W --> C --> EIG
+    EIG --> MP --> PRUNE
+    EIG --> MET --> PRUNE
+    
+    ACT --> COV --> FILTER --> CLEAN --> GEN
+    
+    style M fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#ffffff
+    style Primary fill:#064e3b,stroke:#10b981,stroke-width:1.5px,color:#ffffff
+    style Extended fill:#4c1d95,stroke:#8b5cf6,stroke-width:1.5px,color:#ffffff
 ```
 
 ---
