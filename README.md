@@ -58,29 +58,39 @@ flowchart TD
 ### 1. Empirical Correlation Matrices & Spectral Decomposition
 For a weight matrix $W \in \mathbb{R}^{M \times N}$ in any GPT-2 layer (e.g., $W_{qkv} \in \mathbb{R}^{d \times 3d}$ or $W_{mlp} \in \mathbb{R}^{d \times 4d}$), we center and normalize the matrix to form the empirical correlation / sample covariance matrix:
 
-$$C = \frac{1}{N} W W^\top \in \mathbb{R}^{M \times M}$$
+$$
+C = \frac{1}{N} W W^\top \in \mathbb{R}^{M \times M}
+$$
 
 The spectral properties are governed by its eigenvalue decomposition:
 
-$$C = V \Lambda V^\top, \quad \Lambda = \text{diag}(\lambda_1, \lambda_2, \dots, \lambda_M), \quad \lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_M \ge 0$$
+$$
+C = V \Lambda V^\top, \quad \Lambda = \text{diag}(\lambda_1, \lambda_2, \dots, \lambda_M), \quad \lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_M \ge 0
+$$
 
 The **Empirical Spectral Density (ESD)** is defined as:
 
-$$\rho(\lambda) = \frac{1}{M} \sum_{i=1}^M \delta(\lambda - \lambda_i)$$
+$$
+\rho(\lambda) = \frac{1}{M} \sum_{i=1}^M \delta(\lambda - \lambda_i)
+$$
 
 ---
 
 ### 2. The Marchenko-Pastur (MP) Law (Bulk Noise vs. Signal)
 Under the null hypothesis that $W$ consists of i.i.d. random noise with zero mean and variance $\sigma^2$, as $M, N \to \infty$ with aspect ratio $Q = N/M \ge 1$, the eigenvalue density converges almost surely to the **Marchenko-Pastur distribution**:
 
-$$\rho_{MP}(\lambda) = \begin{cases} 
+$$
+\rho_{MP}(\lambda) = \begin{cases} 
 \frac{Q}{2\pi \sigma^2 \lambda} \sqrt{(\lambda_+ - \lambda)(\lambda - \lambda_-)}, & \lambda_- \le \lambda \le \lambda_+ \\
 0, & \text{otherwise}
-\end{cases}$$
+\end{cases}
+$$
 
 Where the theoretical spectral edges are:
 
-$$\lambda_{\pm} = \sigma^2 \left(1 \pm \sqrt{\frac{1}{Q}}\right)^2$$
+$$
+\lambda_{\pm} = \sigma^2 \left(1 \pm \sqrt{\frac{1}{Q}}\right)^2
+$$
 
 * **Bulk Noise Regime ($\lambda \le \lambda_+$)**: Eigenvalues falling strictly inside $[\lambda_-, \lambda_+]$ represent unstructured, entropy-maximizing noise (overparameterization).
 * **Signal Outliers / Spikes ($\lambda > \lambda_+$)**: Eigenvalues strictly exceeding $\lambda_+$ correspond to learned semantic knowledge and low-rank task representations.
@@ -91,11 +101,15 @@ $$\lambda_{\pm} = \sigma^2 \left(1 \pm \sqrt{\frac{1}{Q}}\right)^2$$
 To measure the effective dimensionality and cross-layer similarity in GPT-2, we compute:
 
 1. **Stable Rank**:
-   $$\text{srank}(W) = \frac{\|W\|_F^2}{\|W\|_2^2} = \frac{\sum_{i} \lambda_i}{\lambda_{\max}}$$
+   $$
+   \text{srank}(W) = \frac{\|W\|_F^2}{\|W\|_2^2} = \frac{\sum_{i} \lambda_i}{\lambda_{\max}}
+   $$
    Measures the degree of energy concentration in the dominant eigenvector.
 
 2. **Effective Rank (Entropy-based)**:
-   $$p_i = \frac{\lambda_i}{\sum_{j} \lambda_j}, \quad H_{\text{spec}} = -\sum_{i=1}^M p_i \ln p_i, \quad \text{erank}(W) = \exp(H_{\text{spec}})$$
+   $$
+   p_i = \frac{\lambda_i}{\sum_{j} \lambda_j}, \quad H_{\text{spec}} = -\sum_{i=1}^M p_i \ln p_i, \quad \text{erank}(W) = \exp(H_{\text{spec}})
+   $$
 
 3. **Power-Law Tail Exponent ($\alpha$)**:
    Trained transformer weights often exhibit heavy tails $\rho(\lambda) \sim \lambda^{-\alpha}$. Layers with smaller $\alpha$ ($2 \le \alpha \le 4$) exhibit strong implicit regularization and high information density.
@@ -108,9 +122,13 @@ To measure the effective dimensionality and cross-layer similarity in GPT-2, we 
 ### 4. Synthetic Data Generation via Spectral Denoising
 During forward inference, intermediate activations $H_l \in \mathbb{R}^{T \times d}$ across sequence length $T$ contain both semantic signals and high-dimensional noise. By constructing the activation covariance $\Sigma_l = \frac{1}{T} H_l^\top H_l$ and applying RMT filtering:
 
-$$\tilde{\Sigma}_l = \sum_{\lambda_i > \lambda_+} \lambda_i v_i v_i^\top$$
+$$
+\tilde{\Sigma}_l = \sum_{\lambda_i > \lambda_+} \lambda_i v_i v_i^\top
+$$
 
-$$\tilde{H}_l = H_l \sum_{\lambda_i > \lambda_+} v_i v_i^\top$$
+$$
+\tilde{H}_l = H_l \sum_{\lambda_i > \lambda_+} v_i v_i^\top
+$$
 
 Propagating the denoised representations $\tilde{H}_l$ through subsequent decoder layers purifies the token emission probabilities $P(x_{t+1} \mid x_{\le t})$, generating synthetic sequences that strip stochastic hallucinations while preserving underlying distributional semantics.
 
